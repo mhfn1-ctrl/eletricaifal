@@ -4525,8 +4525,8 @@
         <!-- SIMULADOR LADDER -->
         <div id="page-ladder" class="page">
             <div class="section-title">
-                <h2>🔲 Simulador Ladder (PLC)</h2><span class="badge" style="background:var(--accent2)">TIPO
-                    ZELIO</span>
+                <h2>🔲 Simulador Ladder (PLC)</h2><span class="badge" style="background:var(--accent2)">BETA (não é
+                    possivel exportar para CLPs reais*)</span>
             </div>
 
             <!-- ZelioSoft-style toolbar -->
@@ -11045,7 +11045,7 @@
             const rung = ladderRungs[rungIdx];
             if (!rung) return;
             const cell = rung.rows[rowIdx][6];
-            if (!cell || !['timer_on','timer_off','timer_pulse'].includes(cell.type)) return;
+            if (!cell || !['timer_on', 'timer_off', 'timer_pulse'].includes(cell.type)) return;
             const lab = { timer_on: 'TON', timer_off: 'TOF', timer_pulse: 'TP' }[cell.type];
             const modal = document.getElementById('ladder-addr-modal');
             const title = document.getElementById('ladder-modal-title');
@@ -11592,7 +11592,7 @@
                         const outCls = 'ldr-outcell' + (isSelOut ? ' cell-selected' : '');
                         const rowEnergized = junctions ? junctions[r][6] : false;
 
-                        const hasDblClick = outCell && ['timer_on','timer_off','timer_pulse'].includes(outCell.type);
+                        const hasDblClick = outCell && ['timer_on', 'timer_off', 'timer_pulse'].includes(outCell.type);
                         html += `<div class="${outCls}" style="height:${ROW_H}px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:.2rem;${r > 0 ? 'border-top:1px solid #0d1520;' : ''}position:relative" onclick="ladderSelectCell(${ri},6,${r},event)"${hasDblClick ? ` ondblclick="ladderEditTimerParams(${ri},${r})"` : ''}>`;
 
 
