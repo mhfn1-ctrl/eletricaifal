@@ -11041,6 +11041,49 @@
             ladderApplyInsert(ladderModalElemType, v, p);
         }
 
+        function ladderEditTimerParams(rungIdx, rowIdx) {
+            const rung = ladderRungs[rungIdx];
+            if (!rung) return;
+            const cell = rung.rows[rowIdx][6];
+            if (!cell || !['timer_on','timer_off','timer_pulse'].includes(cell.type)) return;
+            const lab = { timer_on: 'TON', timer_off: 'TOF', timer_pulse: 'TP' }[cell.type];
+            const modal = document.getElementById('ladder-addr-modal');
+            const title = document.getElementById('ladder-modal-title');
+            const body = document.getElementById('ladder-modal-body');
+            modal.style.display = 'flex';
+            title.textContent = 'Editar Parâmetros — ' + lab + ' ' + cell.var;
+            let html = `<p style="font-size:.72rem;color:var(--text-dim);margin:0 0 .6rem">Ajuste o tempo preset do timer:</p>`;
+            html += `<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
+                <label style="font-size:.72rem;font-weight:700;color:var(--text)">Timer:</label>
+                <input id="ladder-edit-timer-var" type="text" value="${cell.var}" style="flex:1;padding:.35rem .5rem;border-radius:6px;border:1.5px solid #374151;background:#1e1e2e;color:var(--text);font-size:.78rem;font-weight:700">
+            </div>`;
+            html += `<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.8rem">
+                <label style="font-size:.72rem;font-weight:700;color:var(--text)">Preset (s):</label>
+                <input id="ladder-edit-timer-preset" type="number" value="${cell.preset || 3}" min="0.1" step="0.1" style="flex:1;padding:.35rem .5rem;border-radius:6px;border:1.5px solid #374151;background:#1e1e2e;color:var(--text);font-size:.78rem;font-weight:700">
+            </div>`;
+            html += `<button onclick="ladderApplyEditTimer(${rungIdx},${rowIdx})" style="width:100%;padding:.5rem;border-radius:8px;border:none;background:var(--accent2);color:#fff;font-weight:800;font-size:.82rem;cursor:pointer;min-height:44px">✓ Confirmar</button>`;
+            body.innerHTML = html;
+        }
+
+        function ladderApplyEditTimer(rungIdx, rowIdx) {
+            const rung = ladderRungs[rungIdx];
+            if (!rung) return;
+            const cell = rung.rows[rowIdx][6];
+            if (!cell) return;
+            const newVar = document.getElementById('ladder-edit-timer-var').value.toUpperCase().trim();
+            const newPreset = parseFloat(document.getElementById('ladder-edit-timer-preset').value) || 3;
+            if (newVar) cell.var = newVar;
+            cell.preset = newPreset;
+            // Reset timer state for updated params
+            if (ladderTimers[cell.var]) {
+                ladderTimers[cell.var].elapsed = 0;
+                ladderTimers[cell.var].active = false;
+                ladderTimers[cell.var].running = false;
+            }
+            ladderCloseModal();
+            ladderRender();
+        }
+
         function ladderCloseModal() {
             document.getElementById('ladder-addr-modal').style.display = 'none';
         }
@@ -11549,7 +11592,9 @@
                         const outCls = 'ldr-outcell' + (isSelOut ? ' cell-selected' : '');
                         const rowEnergized = junctions ? junctions[r][6] : false;
 
-                        html += `<div class="${outCls}" style="height:${ROW_H}px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:.2rem;${r > 0 ? 'border-top:1px solid #0d1520;' : ''}position:relative" onclick="ladderSelectCell(${ri},6,${r},event)">`;
+                        const hasDblClick = outCell && ['timer_on','timer_off','timer_pulse'].includes(outCell.type);
+                        html += `<div class="${outCls}" style="height:${ROW_H}px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:.2rem;${r > 0 ? 'border-top:1px solid #0d1520;' : ''}position:relative" onclick="ladderSelectCell(${ri},6,${r},event)"${hasDblClick ? ` ondblclick="ladderEditTimerParams(${ri},${r})"` : ''}>`;
+
 
                         if (outCell && outCell.type !== 'empty') {
                             html += ladderOutputSymbol(outCell, rowEnergized);
@@ -11651,8 +11696,12 @@
             // col 0 = left rail, col c+1 = right side of cell at column c
             const junctions = Array.from({ length: numRows }, () => Array(7).fill(false));
 
-            // Left rail: only row 0 energized directly
-            junctions[0][0] = true;
+            // Left rail: energize rows that have a non-empty cell in column 0
+            for (let r = 0; r < numRows; r++) {
+                if (rung.rows[r][0] && rung.rows[r][0].type !== 'empty') {
+                    junctions[r][0] = true;
+                }
+            }
 
             // Propagate vertical wires at junction 0
             ladderPropagateVertical(rung, junctions, 0);
@@ -11690,24 +11739,8 @@
 
             ladderPrevMemory = JSON.parse(JSON.stringify(ladderMemory));
 
-            const latchedVars = new Set();
-            ladderRungs.forEach(r => {
-                r.rows.forEach(row => {
-                    const out = row[6];
-                    if (out && (out.type === 'coil_set' || out.type === 'coil_reset')) latchedVars.add(out.var);
-                });
-            });
-
-            ladderRungs.forEach(r => {
-                r.rows.forEach(row => {
-                    const out = row[6];
-                    if (!out || !out.var) return;
-                    if (out.var.startsWith('I')) return;
-                    if ((out.type === 'coil' || out.type === 'coil_neg') && !latchedVars.has(out.var)) {
-                        ladderMemory[out.var] = false;
-                    }
-                });
-            });
+            // Collect coil output results in a temporary map, then apply after all rungs evaluated
+            const coilResults = {};
 
             ladderRungs.forEach((rung, ri) => {
                 const evalResult = ladderEvalRungFull(ri);
@@ -11718,8 +11751,14 @@
                     if (!out || out.type === 'empty') return;
                     const rowActive = junctions ? junctions[rowIdx][6] : false;
 
-                    if (out.type === 'coil') ladderMemory[out.var] = ladderMemory[out.var] || rowActive;
-                    else if (out.type === 'coil_neg') ladderMemory[out.var] = ladderMemory[out.var] || !rowActive;
+                    if (out.type === 'coil') {
+                        if (!coilResults[out.var]) coilResults[out.var] = { type: 'coil', value: false };
+                        coilResults[out.var].value = coilResults[out.var].value || rowActive;
+                    }
+                    else if (out.type === 'coil_neg') {
+                        if (!coilResults[out.var]) coilResults[out.var] = { type: 'coil_neg', value: false };
+                        coilResults[out.var].value = coilResults[out.var].value || !rowActive;
+                    }
                     else if (out.type === 'coil_set') { if (rowActive) ladderMemory[out.var] = true; }
                     else if (out.type === 'coil_reset') { if (rowActive) ladderMemory[out.var] = false; }
                     else if (out.type === 'timer_on') {
@@ -11757,6 +11796,12 @@
                     }
                 });
             });
+
+            // Apply coil results AFTER all rungs evaluated (fixes selo/seal circuits)
+            for (const v in coilResults) {
+                if (v.startsWith('I')) continue;
+                ladderMemory[v] = coilResults[v].value;
+            }
 
             const scEl = document.getElementById('ladder-scan-count');
             if (scEl) scEl.textContent = ladderScanCounter;
