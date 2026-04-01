@@ -2703,9 +2703,9 @@
                         como ponte entre o Claude e a API do Revit.
                     </div>
                     <div style="display:flex;flex-wrap:wrap;gap:.7rem">
-                        <a href="https://github.com/troopl/revit-pyrevit-mcp" target="_blank" rel="noopener"
+                        <a href="https://github.com/mcp-servers-for-revit/revit-mcp-python" target="_blank" rel="noopener"
                             style="display:inline-flex;align-items:center;gap:.5rem;background:#1f2328;color:#fff;padding:.6rem 1.1rem;border-radius:10px;text-decoration:none;font-weight:700;font-size:.85rem;border:1px solid #30363d">
-                            🐙 github.com/troopl/revit-pyrevit-mcp
+                            🐙 mcp-servers-for-revit/revit-mcp-python
                         </a>
                         <a href="https://www.anthropic.com/news/model-context-protocol" target="_blank" rel="noopener"
                             style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(139,92,246,.12);color:#8b5cf6;padding:.6rem 1.1rem;border-radius:10px;text-decoration:none;font-weight:700;font-size:.85rem;border:1px solid rgba(139,92,246,.3)">
@@ -2765,9 +2765,8 @@
                             style="display:flex;align-items:center;gap:.8rem;background:var(--surface2);padding:.65rem .9rem;border-radius:10px">
                             <span style="font-size:1.3rem;flex-shrink:0">🟩</span>
                             <div>
-                                <div style="font-weight:700;font-size:.88rem">Node.js</div>
-                                <div style="font-size:.78rem;color:var(--text-dim)">v18 ou superior (para rodar o
-                                    servidor MCP)</div>
+                                <div style="font-weight:700;font-size:.88rem">uv (Python package manager)</div>
+                                <div style="font-size:.78rem;color:var(--text-dim)">Recomendado para rodar o servidor MCP Python</div>
                             </div>
                         </div>
                         <div
@@ -2799,7 +2798,7 @@
                                 <div style="font-size:.82rem;color:var(--text-dim);line-height:1.6">Baixe e instale o
                                     PyRevit no site oficial. Após a instalação, o Revit terá uma aba extra "pyRevit" na
                                     ribbon.</div>
-                                <a href="https://github.com/eirannejad/pyRevit/releases" target="_blank" rel="noopener"
+                                <a href="https://github.com/pyrevitlabs/pyRevit/releases" target="_blank" rel="noopener"
                                     style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.5rem;background:rgba(139,92,246,.12);color:#8b5cf6;padding:.35rem .8rem;border-radius:8px;text-decoration:none;font-size:.78rem;font-weight:700;border:1px solid rgba(139,92,246,.25)">⬇️
                                     Download PyRevit</a>
                             </div>
@@ -2815,7 +2814,7 @@
                                 <div style="font-size:.82rem;color:var(--text-dim);line-height:1.6">Abra o terminal (CMD
                                     ou PowerShell) e execute:</div>
                                 <code
-                                    style="display:block;background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin-top:.5rem;word-break:break-all">git clone https://github.com/troopl/revit-pyrevit-mcp</code>
+                                    style="display:block;background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin-top:.5rem;word-break:break-all">git clone https://github.com/mcp-servers-for-revit/revit-mcp-python</code>
                             </div>
                         </div>
 
@@ -2825,11 +2824,11 @@
                                 3</div>
                             <div style="flex:1;min-width:0">
                                 <div style="font-weight:700;font-size:.92rem;margin-bottom:.3rem">Instalar dependências
-                                    Node</div>
+                                    Python</div>
                                 <div style="font-size:.82rem;color:var(--text-dim);line-height:1.6">Dentro da pasta
                                     clonada, execute:</div>
                                 <code
-                                    style="display:block;background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin-top:.5rem">cd revit-pyrevit-mcp<br>npm install</code>
+                                    style="display:block;background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin-top:.5rem">cd revit-mcp-python<br>pip install -r requirements.txt</code>
                             </div>
                         </div>
 
@@ -2856,9 +2855,9 @@
                                 <div style="font-size:.82rem;color:var(--text-dim);line-height:1.6">No terminal, dentro
                                     da pasta do projeto, rode:</div>
                                 <code
-                                    style="display:block;background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin-top:.5rem">npm start</code>
+                                    style="display:block;background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin-top:.5rem">uv run --with mcp[cli] mcp run main.py</code>
                                 <div style="font-size:.78rem;color:var(--text-dim);margin-top:.4rem">O servidor ficará
-                                    escutando na porta 3000 por padrão.</div>
+                                    escutando na porta 8000 por padrão.</div>
                             </div>
                         </div>
 
@@ -2873,7 +2872,7 @@
                                     Pro) ou no Claude Desktop, vá em Configurações → Ferramentas MCP e adicione o
                                     servidor local:</div>
                                 <code
-                                    style="display:block;background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin-top:.5rem">http://localhost:3000</code>
+                                    style="display:block;background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-size:.8rem;margin-top:.5rem">http://localhost:8000/mcp</code>
                             </div>
                         </div>
 
